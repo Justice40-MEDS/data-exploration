@@ -1,0 +1,115 @@
+---
+title: "Flash Talk (2/12)"
+author: "Justice40 Team"
+format:
+  revealjs:
+    embed-resources: true
+    theme: default
+    slide-number: true
+    show-slide-number: all
+    highlight-style: github
+    code-fold: false
+    toc: true
+    toc-depth: 1
+    toc-title: "Outline"
+    footer: "Data Exploration"
+---
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+library(sf)
+library(leaflet)
+library(tidyverse)
+```
+
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+national_data <- st_read("/capstone/justice40/data/national_results.geojson")
+
+
+# Create a bounding box for contiguous US
+cont_us_bbox <- st_bbox(c(
+  xmin = -124.848974, 
+  xmax = -66.885444, 
+  ymin = 24.396308, 
+  ymax = 49.384358
+))
+
+# Convert bbox to an sf polygon with same CRS
+cont_us_box <- st_as_sfc(cont_us_bbox) %>%
+  st_set_crs(st_crs(national_data))
+
+# Clip the data
+contiguous_data <- st_intersection(national_data, cont_us_box)
+
+
+```
+```{r}
+# Create static map
+ggplot(contiguous_data) +
+  geom_sf(aes(fill = standardized_g_star)) +
+  scale_fill_viridis_c(name = "Standardized G*") +
+  theme_minimal() +
+  labs(title = "Standardized G* Values - Contiguous US") +
+  theme(
+    plot.title = element_text(size = 14, face = "bold"),
+    legend.position = "right"
+  )
+```
+
+```{r}
+library(mapview)
+mapview(contiguous_data, zcol = "standardized_g_star")
+```
+
+
+
+## LISA Map
+
+```{r}
+# Create color palette
+pal <- colorNumeric(
+  palette = "viridis",
+  domain = contiguous_data$standardized_g_star,
+  na.color = "transparent"
+)
+
+# Create the map
+map <- leaflet(contiguous_data) %>%
+  addProviderTiles(providers$CartoDB.Positron) %>%
+  addPolygons(
+    fillColor = ~pal(standardized_g_star),
+    fillOpacity = 0.7,
+    weight = 0.5,
+    color = "#444",
+    highlight = highlightOptions(
+      weight = 2,
+      color = "#000",
+      fillOpacity = 0.9,
+      bringToFront = TRUE
+    ),
+    label = ~paste0(
+      "Tract ID: ", tract_id,
+      "<br>G* Value: ", round(standardized_g_star, 3)
+    )
+  ) %>%
+  addLegend(
+    position = "bottomright",
+    pal = pal,
+    values = ~standardized_g_star,
+    title = "Standardized G*",
+    opacity = 0.7
+  ) %>%
+  setMaxBounds(
+    lng1 = -180,
+    lat1 = -15,
+    lng2 = 180,
+    lat2 = 72
+  ) %>%
+  setView(
+    lng = 0,
+    lat = 30,
+    zoom = 2
+  )
+
+# Display the map
+map
+```
+
