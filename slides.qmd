@@ -18,6 +18,7 @@ format:
 library(sf)
 library(leaflet)
 library(tidyverse)
+library(RColorBrewer)
 ```
 
 ```{r warning=FALSE, message=FALSE, echo=FALSE}
@@ -43,21 +44,35 @@ contiguous_data <- st_intersection(national_data, cont_us_box)
 ```
 ```{r}
 # Create static map
-ggplot(contiguous_data) +
-  geom_sf(aes(fill = standardized_g_star)) +
-  scale_fill_viridis_c(name = "Standardized G*") +
+static_map = ggplot(contiguous_data) +
+  geom_sf(aes(fill = standardized_g_star), size = 0.01) +
+  scale_fill_distiller(
+    name = "Standardized G*",
+    palette = "RdBu",
+    direction = -1
+  ) +
   theme_minimal() +
-  labs(title = "Standardized G* Values - Contiguous US") +
+  labs(title = "Environmental Burden Hotspots for Contiguous US") +
   theme(
-    plot.title = element_text(size = 14, face = "bold"),
+    plot.title = element_text(size = 36, face = "bold"),
     legend.position = "right"
   )
+
+static_map
 ```
 
 ```{r}
-library(mapview)
-mapview(contiguous_data, zcol = "standardized_g_star")
+ggsave(
+  filename = "static_map_large.png",
+  plot = static_map,
+  width = 24,
+  height = 16,
+  dpi = 600,
+  units = "in",
+  bg = "transparent"
+)
 ```
+
 
 
 
