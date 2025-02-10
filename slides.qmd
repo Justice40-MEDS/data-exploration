@@ -45,17 +45,22 @@ contiguous_data <- st_intersection(national_data, cont_us_box)
 ```{r}
 # Create static map
 static_map = ggplot(contiguous_data) +
-  geom_sf(aes(fill = standardized_g_star), size = 0.01) +
+  geom_sf(aes(fill = standardized_g_star), size = 0.1) +
   scale_fill_distiller(
     name = "Standardized G*",
     palette = "RdBu",
     direction = -1
   ) +
   theme_minimal() +
-  labs(title = "Environmental Burden Hotspots for Contiguous US") +
+  labs(title = "Environmental Burden Hotspots for Contiguous US",
+       subtitle = "Using Local Indicators of Spatial Association") +
   theme(
-    plot.title = element_text(size = 36, face = "bold"),
-    legend.position = "right"
+    plot.title = element_text(size = 40),
+    plot.subtitle = element_text(size = 25),
+    legend.position = "bottom",
+    legend.key.size = unit(1, "cm"),
+    legend.text = element_text(size = 12),
+    legend.title = element_text(size = 14)  
   )
 
 static_map
